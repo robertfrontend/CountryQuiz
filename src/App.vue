@@ -237,11 +237,11 @@ export default {
             <div class="modal__image">
               <img src="./assets/init.svg" alt="" />
             </div>
-            <!--tipo bandera--->
+            <!--tipo bandera-->
             <div v-if="objetoPregunta.tipo == 'bandera'">
               <img :src="objetoPregunta.bandera" width="100px" alt="" />
             </div>
-            <!--fin tipo bandera--->
+            <!--fin tipo bandera-->
             <div class="modal__title">
               <h3>{{ objetoPregunta.pregunta }}</h3>
             </div>
