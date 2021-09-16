@@ -21,11 +21,12 @@ export default {
         otras_respuestas: null,
       },
       respuesta_selecionada: null,
-      selecionado_correcto: false,
+      selecionado_correcto: null,
       respuestas_correctas: 0,
       mostrar_resultados: false,
 
       isLoading: false,
+      error_system: false,
     };
   },
 
@@ -57,10 +58,12 @@ export default {
         });
         const item = countrys[Math.floor(Math.random() * countrys.length)];
         this.county_code_ramdom = item;
+        this.error_system = false;
 
         this.getCountrySelect();
       } catch (error) {
         console.error(error, "Error al mapear y selecionar el codigo pais ramdon");
+        this.error_system = true;
       }
     },
 
@@ -98,11 +101,17 @@ export default {
 
       if (paises.length > 0) {
         // buscar los paises ramdoms
-        const url = `https://restcountries.eu/rest/v2/alpha?codes=${paises[0]};${paises[1]};${paises[2]}`;
-        const respuesta = await axios.get(url);
-        this.three_countrys_ramdom = respuesta.data;
+        try {
+          const url = `https://restcountries.eu/rest/v2/alpha?codes=${paises[0]};${paises[1]};${paises[2]}`;
+          const respuesta = await axios.get(url);
+          this.three_countrys_ramdom = respuesta.data;
+          this.error_system = false;
 
-        this.tipopreguntaRamdom();
+          this.tipopreguntaRamdom();
+        } catch (error) {
+          this.error_system = true;
+          console.log(error, "error al buscar los paises ");
+        }
       }
     },
 
@@ -113,8 +122,6 @@ export default {
 
       const tipos = ["capital", "bandera"];
       const item = tipos[Math.floor(Math.random() * tipos.length)];
-
-      console.log(item, "tipo pregunta");
 
       this.construirPregunta(item);
     },
@@ -130,7 +137,9 @@ export default {
         // tipo capital
         case "capital":
           this.three_countrys_ramdom.map((res) => {
-            respuestas.push(res.capital);
+            if (res.capital !== "") {
+              respuestas.push(res.capital);
+            }
           });
           respuestas.push(this.country_selecionado.capital);
 
@@ -141,13 +150,14 @@ export default {
             todas_respustas: respuestas.sort(() => Math.random() - 0.5),
           };
 
-          console.log("capital");
           break;
 
         // tipo bandera
         case "bandera":
           this.three_countrys_ramdom.map((res) => {
-            respuestas.push(res.name);
+            if (res.name !== "") {
+              respuestas.push(res.name);
+            }
           });
           respuestas.push(this.country_selecionado.name);
 
@@ -169,6 +179,8 @@ export default {
 
     // selecionar respuesta
     selecionarRespuesta(dato) {
+      if (this.selecionado_correcto === false || this.selecionado_correcto === true)
+        return;
       this.respuesta_selecionada = dato;
 
       // si el usuario seleciono correctamente la respuesta
@@ -181,7 +193,6 @@ export default {
       else {
         this.selecionado_correcto = false;
       }
-      console.log(this.selecionado_correcto);
     },
 
     // validar respuesta
@@ -296,11 +307,18 @@ export default {
                           : ''
                       "
                     >
+                      todo mal
                       <i class="far fa-check-circle" style="color: #60bf88"></i>
                     </template>
                   </div>
                 </template>
               </template>
+            </div>
+            <br />
+            <div class="hit">
+              <h6>
+                <span class="bien">{{ respuestas_correctas }}</span> HIT !!
+              </h6>
             </div>
             <div style="text-align: right" v-if="respuesta_selecionada">
               <button class="boton" @click="siguientePaso">Next</button>
@@ -390,6 +408,7 @@ body {
   font-weight: 500;
   font-size: 16px;
   cursor: pointer;
+  position: relative;
 }
 
 @media screen and (max-width: 550px) {
@@ -411,6 +430,9 @@ body {
 
 .__respuesta i {
   font-size: 20px;
+  position: absolute;
+  top: 30%;
+  right: 0.5em;
 }
 
 .__respuesta:hover {
@@ -481,5 +503,19 @@ body {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.hit {
+  text-align: center;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 40px;
+  color: #1d355d;
+}
+.hit h6 {
+  margin: 0;
+}
+.bien {
+  color: #6fcf97 !important;
 }
 </style>
